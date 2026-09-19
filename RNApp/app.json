@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "拉伸换边计时器",
+    "slug": "stretch-side-timer",
+    "version": "1.5.1",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.stretch.sidetimer",
+      "versionCode": 3,
+      "adaptiveIcon": {
+        "backgroundColor": "#FFD9C7",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-audio"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "70219702-7d9d-4ee8-8a47-3c71aa07edaf"
+      }
+    },
+    "owner": "wanghoufan"
+  }
+}
