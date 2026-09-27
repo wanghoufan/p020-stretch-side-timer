@@ -75,6 +75,7 @@ export const en: Record<StringKey, string> = {
   // ── Settings screen ───────────────────────────────────────
   'settings.header': 'Settings',
   'settings.group.language': 'Language',
+  'settings.language.system': 'Follow system',
   'settings.group.theme': 'Theme',
   'settings.group.total': 'Total time (min)',
   'settings.group.perSide': 'Time per side',

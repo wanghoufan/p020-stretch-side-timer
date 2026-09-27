@@ -7,3 +7,8 @@
 {"date":"2026-09-27","task":"T13 全链复检","role":"supervisor","model":"opencode-go/muse-spark-1.3-contributor","used":"主","runtime":"opencode","result":"PASS","note":"六查通过，3条P2已闭环，真机P1已闭环；要求补记HANDOFF与账本"}
 {"date":"2026-09-27","task":"T13 经验记录","role":"experience-recorder","model":"opencode-go/space-bunny-free","used":"主","runtime":"opencode","result":"PASS","note":""}
 {"date":"2026-09-27","task":"T13 收口洁癖（重派）","role":"neat-freak","model":"opencode-go/space-bunny-free","used":"主","runtime":"opencode","result":"PASS","note":"首轮访问 /tmp 被权限拒后未完成，重派禁外目录后完成"}
+{"date":"2026-09-27","task":"T14 builder 实现","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":""}
+{"date":"2026-09-27","task":"T14 code review","role":"code-reviewer","model":"codebuddy/glm-5.3-flash","used":"主","runtime":"codebuddy","result":"PASS","note":""}
+{"date":"2026-09-27","task":"T14 builder 修 P2-1","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":""}
+{"date":"2026-09-27","task":"T14 静态 QA","role":"qa","model":"codex/gpt-6-luna","used":"主","runtime":"codex","result":"PASS","note":"QA 专用解禁沙箱"}
+{"date":"2026-09-27","task":"T14 真机 QA","role":"qa","model":"opencode-go/space-bunny-free","used":"主","runtime":"本窗口","result":"PASS","note":"按 override 表真机QA走本窗口 bash 直驱（adb），note 记分支"}

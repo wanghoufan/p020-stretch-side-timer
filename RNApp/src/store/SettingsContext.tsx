@@ -15,7 +15,7 @@ export interface Settings {
   backgroundSound: BackgroundSoundId | 'off';
   theme: ThemeId;
   timeSpeed: number;
-  /** 界面语言（spec F8，全局偏好，不进模式快照）；存量数据缺此字段时回落 'zh' */
+  /** 界面语言（spec F8，全局偏好，不进模式快照）；存量数据缺此字段时回落 'system'（跟随系统） */
   language: LanguageCode;
 }
 
@@ -32,7 +32,7 @@ export const DEFAULT_SETTINGS: Settings = {
   backgroundSound: 'off',
   theme: 'default' as ThemeId,
   timeSpeed: 1,
-  language: 'zh',
+  language: 'system',
 };
 
 interface SettingsContextValue {

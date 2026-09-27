@@ -70,6 +70,8 @@ export const zh = {
   // ── 设置页 ────────────────────────────────────────────────
   'settings.header': '设置',
   'settings.group.language': '界面语言',
+  // 「跟随系统」伪项显示文案（语言表 label 的取值来源）
+  'settings.language.system': '跟随系统',
   'settings.group.theme': '主题风格',
   'settings.group.total': '总时长（分钟）',
   'settings.group.perSide': '单边时长',

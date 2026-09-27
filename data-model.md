@@ -1,8 +1,8 @@
 # 数据模型（data-model.md）
 
-> 版本：V1.7 ｜ 依据：spec.md V1.7 + plan.md（模式对应）；命名与两文档一致。
+> 版本：V1.8 ｜ 依据：spec.md V1.8 + plan.md（模式对应）；命名与两文档一致。
 > 存储：全部本地，AsyncStorage 四个键（settings/history/modes/activeMode），无后端、无关系型数据库。
-> 变更记录：V1.7（2026-09-27）settings 新增 `language` 字段（spec F8 界面多语言），取值 `'zh' | 'en'`，默认 `'zh'`；**不新增 AsyncStorage 键**（语言随 settings 一起持久化，存于 `@stretch/settings`）；文案本体为编译期代码（`src/i18n/strings.zh.ts` / `strings.en.ts`），不入存储。（spec F3 背景音 UI 补全：轻音乐分组新增「关闭」入口、两组标注点击试听；`backgroundSound` 取值未变，'off' 仍为唯一关闭态）。V1.5（2026-09-19）settings.backgroundSound 可选值由 5 种扩为 9 种（spec F3 背景音新增轻音乐类，增加 senbazuru/reminiscing/reawakening/facile）。V1.4（2026-09-19）settings.soundId 可选值由 5 种扩为 8 种（spec F3 音效重做，新增 alarm/rising/digital）；含修正 backgroundSound 取值与实现一致（off + 5 种背景音，原文档误记为 3 种）。V1.3（2026-09-15）新增 Mode 数据模型（spec F7 模式/分组），AsyncStorage 新增 @stretch/modes、@stretch/activeMode；settings 新增 timeSpeed 字段。V1.2（2026-09-15）settings 新增 theme 字段（spec F6 主题风格），取值 default/tech/minimal/magazine，默认 default。V1.1（2026-09-14 neat-freak 对齐）settings 新增 backgroundSound 字段（spec F3 倒计时背景音）。V1.0 为开发基线。
+> 变更记录：V1.8（2026-09-27）`language` 取值扩为 `'system' | 'zh' | 'en'`，**默认 `'system'`**（V1.7 定的默认 'zh' 作废）；`'system'` 为解析项不是语言，运行时用 `expo-localization` 读系统语言后解析为 zh/en，系统语言不支持则回落 'zh'；**存量数据无该字段时按 'system' 处理**。V1.7（2026-09-27）settings 新增 `language` 字段（spec F8 界面多语言），取值 `'zh' | 'en'`，默认 `'zh'`；**不新增 AsyncStorage 键**（语言随 settings 一起持久化，存于 `@stretch/settings`）；文案本体为编译期代码（`src/i18n/strings.zh.ts` / `strings.en.ts`），不入存储。（spec F3 背景音 UI 补全：轻音乐分组新增「关闭」入口、两组标注点击试听；`backgroundSound` 取值未变，'off' 仍为唯一关闭态）。V1.5（2026-09-19）settings.backgroundSound 可选值由 5 种扩为 9 种（spec F3 背景音新增轻音乐类，增加 senbazuru/reminiscing/reawakening/facile）。V1.4（2026-09-19）settings.soundId 可选值由 5 种扩为 8 种（spec F3 音效重做，新增 alarm/rising/digital）；含修正 backgroundSound 取值与实现一致（off + 5 种背景音，原文档误记为 3 种）。V1.3（2026-09-15）新增 Mode 数据模型（spec F7 模式/分组），AsyncStorage 新增 @stretch/modes、@stretch/activeMode；settings 新增 timeSpeed 字段。V1.2（2026-09-15）settings 新增 theme 字段（spec F6 主题风格），取值 default/tech/minimal/magazine，默认 default。V1.1（2026-09-14 neat-freak 对齐）settings 新增 backgroundSound 字段（spec F3 倒计时背景音）。V1.0 为开发基线。
 
 ## 1. 设置（settings）
 
@@ -18,7 +18,7 @@
 | backgroundSound | 'off' \| 环境音 5 种（ticktock/clock_tick1/clock_tick2/rain/waves）\| 轻音乐 4 首（senbazuru/reminiscing/reawakening/facile） | 是 | 倒计时背景音，off=关闭；其余 9 种计时中循环播放，对应 spec F3。轻音乐为 Incompetech CC BY 4.0 素材，需在设置页署名 |
 | theme | 'default' \| 'tech' \| 'minimal' \| 'magazine' | 是 | 主题风格，default=暖萌（默认）；tech=科技、minimal=极简、magazine=杂志，对应 spec F6 |
 | timeSpeed | number | 是 | 时间流速倍率，取值 1-100，默认 1；100 倍速可在 3 秒内走完 100 秒显示时间，用于快速验证提醒，对应 spec F7 |
-| language | 'zh' \| 'en' | 否（默认 'zh'） | 界面语言，'zh'=中文（默认）、'en'=英文，对应 spec F8。存量数据无此字段时按 'zh' 处理，**不因缺字段报错**；切换立即生效并持久化。**不进入模式快照**（`settingsToModeSettings` 刻意不带该字段），因此新建/编辑/复制模式与切换/启用模式都不读写它；`modeSettingsToSettings` 显式把当前语言带回去，保证启用模式不会把界面语言打回默认值 |
+| language | 'system' \| 'zh' \| 'en' | 否（默认 'system'） | 界面语言，对应 spec F8。`system`=跟随系统语言（`expo-localization`，运行时解析为 zh/en；系统语言不在支持列表则回落 zh）；`zh`/`en`=手动指定，优先于跟随。存量数据无此字段时按 `system` 处理，**不因缺字段报错**；切换立即生效并持久化。**不进入模式快照**（`settingsToModeSettings` 刻意不带该字段），因此新建/编辑/复制模式与切换/启用模式都不读写它；`modeSettingsToSettings` 显式把当前语言带回去，保证启用模式不会把界面语言打回默认值 |
 
 约束：
 - 段数 = totalMinutes × 60 ÷ perSideSeconds，必须为整数（选项设计保证整除）。

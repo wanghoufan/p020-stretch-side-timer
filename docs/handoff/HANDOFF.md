@@ -1,10 +1,10 @@
 # HANDOFF｜交接
 
 - Captured at：2026-09-27
-- PROJECT_PHASE：DEVELOP（T13 多语言已完成并通过真机验收，链条待收尾派经验/neat）
+- PROJECT_PHASE：DEVELOP（T13 多语言 + T14 跟随系统均已完成并通过真机验收，chain_status=CLOSED）
 - DEV_BASELINE：SDD **四份**带版本文档 V1.7（`spec.md` / `plan.md` / `data-model.md` / `tasks.md`）；另 `constitution.md` 为长期原则底线、无版本号，DEV 期间不随 SDD 升版
-- Stage ID：TASK-2-MVP / T13-多语言
-- 当前状态：2026-09-27 完成 F8 界面多语言（中文/英文），本地构建 V1.6.0（versionCode 4）并推送两台真机。CHANGE_REQUEST: B（新增 F8 功能，用户已拍板架构「方案 A RN i18n 层」+ 翻译口径；属局部功能变化，更新局部 Requirement/DoD 后留 DEVELOP，未召 Sol Planner）
+- Stage ID：TASK-2-MVP / T13-多语言 / T14-跟随系统
+- 当前状态：2026-09-27 完成 F8 界面多语言（中文/英文，T13）与「跟随系统」（T14），本地构建 V1.7.0（versionCode 5）并推送两台真机。CHANGE_REQUEST: A（T14）（新增 F8 功能，用户已拍板架构「方案 A RN i18n 层」+ 翻译口径；属局部功能变化，更新局部 Requirement/DoD 后留 DEVELOP，未召 Sol Planner）
 
 ## 零、T13 界面多语言（F8，2026-09-27，已完成）
 
@@ -115,6 +115,20 @@
       - ①「关闭」同时高亮两分组是否接受？若嫌别扭需把 `backgroundSound` 拆成「环境音开关 + 轻音乐开关」两字段（改动较大）。
       - ②轻音乐在换边那 1~3 秒会暂停让路给换边音（10 分钟计时断约 10 次）。可选改为「压低不停（duck）」但换边音会没那么突出。
 
+## 0.2 T14 界面语言「跟随系统」（2026-09-27，已完成）
+
+- 需求：语言选项除中文/英文外还应有「跟随系统」，老外手机系统是英文则装上即英文。
+- 决策（用户拍板）：装 `expo-localization`（项目首个 locale 依赖）；「跟随系统」排第一且为新装用户默认。
+- 实现：`LANGUAGES` 首位插伪项 `{ code:'system', label:null, strings:null }`（伪项无文案，中文界面「跟随系统」/ 英文界面 "Follow system" 由 `t()` 提供）；`LanguageCode` 由表推导自动含 'system'；纯函数 `resolveLanguage(code, systemLocaleTag)` 取 tag 语言前缀命中已支持语言则跟随、否则回落 'zh'；`FOLLOWABLE_CODES` 由 LANGUAGES 推导 —— **加 ja 后 `system`+`ja-JP` 自动返回 ja，无需改解析代码**；`Settings.language` 默认值 `'zh'` → `'system'`；`I18nProvider` 用 `useLocales()`（自带订阅，系统语言运行期变化也会重渲染）取 tag，`systemLocaleTag` prop 注入能力保留供单测。
+- **存量语义**：已存 `'zh'`/`'en'` 的用户升级后语言不变（合并顺序 `{...DEFAULT_SETTINGS, ...parsed}`）；只有「无 language 字段」的按 `system` 处理 —— 中文系统用户无感，英文系统用户升级后直接得到英文界面（可手动切回）。`language` 仍不进模式快照。
+- **踩坑 P2-1（已修）**：系统 tag 原在 Provider 挂载时读一次，而 config plugin 给 Activity 补了 `configChanges=locale`（Activity 不重建），导致运行期改系统语言不跟随；改用 `useLocales()` 解决。
+- **构建注意（P2-2，已判定不处理）**：`eas build --local` 每次都重跑 prebuild，config plugin 副作用必生效；但**本地直构（`npx expo run:android`）不跑 prebuild、不含 plugin 的 manifest 副作用**（如 configChanges）。本项目验收一律以 `eas build --local` 产物为准，别拿本地直构的包做验收。
+- **遗留 P2（未处理）**：`npx expo install --check` 提示项目既有版本偏差 —— `@react-native-community/slider@5.2.1`（期望 5.2.0）、`expo@57.0.22`（期望 ~57.0.25），**非 T14 引入**，升级会扩大回归面，需另开任务。
+- 真机验收（第一台 IN9LZTAYV4UGU4JF，系统 `persist.sys.locale=zh-CN`）：三项顺序正确且 system 在首位；存量手动「中文」被正确保留；选「跟随系统」→ 界面中文（证明确实跟随系统而非固定值）；选 English（系统是中文）→ 立即英文、强杀重开仍英文（手动优先 + 持久化）；最后已切回中文恢复用户原状。第二台（indq5xfi6hovay4d）仅安装 + dumpsys（1.7.0/code 5），屏幕仍全黑无法目视，沿用 T13 结论（设备侧问题）。
+- 静态 QA：`resolveLanguage` 12 用例真跑通过（zh-Hans-CN→zh / en-US→en / ja-JP→zh / `EN-us`、`zh_CN` 容错 / null、undefined、'' 回落 / 手动码优先），并模拟加 ja 验证自动纳入。
+- 产物：`artifacts/拉伸换边计时器丨V1.7丨跟随系统丨APK丨本地构建.apk`，92522018 字节，SHA-256 `145a63897183c1e729bf18fee137c5e37f7d11c71b3ad86cde963952debae9df`，versionName 1.7.0 / versionCode 5，`aapt dump badging` 确认 `application-label:'拉伸换边计时器'` + `application-label-en:'Stretch Timer'`。
+- 执行链：builder(codebuddy/deepseek-v4.1-flash) → code-reviewer(codebuddy/glm-5.3-flash，0 P0/P1) → builder 修 P2-1 → qa 静态(codex/gpt-6-luna) → 真机 QA(本窗口 bash 直驱) → supervisor 复检 PASS，rework=0。评审与验收文档：`docs/review/CODE_REVIEW_T14.md`、`docs/qa/T14 跟随系统验收报告.md`。
+
 ## 二、下一步任务
 
 当前没有 P0/P1 待办（F8 多语言已闭环），后续恢复开发时按以下顺序处理：
@@ -128,7 +142,7 @@
    - 8 种提醒音效的"听感"需在红米真机上由用户确认是否够响、够明显。客观指标已达标（见第一节第 13 条），但响度主观感受只能人耳判定。若不满意，改 `RNApp/scripts/generate-sounds.py` 里对应函数的频率/时长/节奏参数后重跑脚本即可，无需动 App 代码。
    - 4 首轻音乐的**循环无缝度**与整体音感需用户确认。若嫌响度偏轻/偏响，改 `scripts/prepare-music.py` 的 `--target-lufs`（默认 -18）重跑，无需动 App 代码。
    - 未验证项：**真实音乐 App 被压低**的效果（duckOthers 的焦点类型与释放已实测正确，但"对方确实降音量"需设备上同时播放音乐才能观察）。
-4. 版本号已统一：产品规格 V1.7，App 发布版本 1.6.0（versionCode 4，读 app.json，`eas.json` 的 `appVersionSource` 为 local）。后续发版时保持两者同步、递增 versionCode。
+4. 版本号已统一：产品规格 V1.8，App 发布版本 1.7.0（versionCode 5，读 app.json，`eas.json` 的 `appVersionSource` 为 local）。后续发版时保持两者同步、递增 versionCode。
 5. 如需重新构建 APK：先确认代码和文档变更；构建后将 APK 归档到 `artifacts/`；记录 EAS Build ID、版本号、构建日期、SHA-256；再进行真机安装和启动验证。
 6. 可选后续功能：振动提醒、自定义总时长、通知栏常驻提醒、自动深浅色模式、云同步、账号、统计图表。
 7. 当前明确不纳入范围的功能，除非用户重新提出，不要主动实现。
@@ -154,7 +168,7 @@
 8. APK 构建产物必须保留在 `artifacts/`，不要只保留云端链接。
 9. 不提交 API Key、Token、`.env` 或真实隐私数据。
 10. 未经明确指令不执行 git commit 或 git push。
-11. 最新 APK 为 **1.6.0**（versionCode 4，本地构建，含 F8 多语言）。判断最新版以 `app.json` 的 version + `artifacts/` 归档文件 + 真机 `dumpsys` 校验为准，不要凭记忆的旧版本号。
+11. 最新 APK 为 **1.7.0**（versionCode 5，本地构建，含 F8 多语言 + 跟随系统）。判断最新版以 `app.json` 的 version + `artifacts/` 归档文件 + 真机 `dumpsys` 校验为准，不要凭记忆的旧版本号。
 12. 目标 Android 真机为红米；若 ADB 安装失败，优先检查设备授权、USB 调试和 MIUI USB 安装权限。
 13. 重新安装同包名 APK 通常会保留本地设置、历史记录和模式数据，但重大版本升级前仍应提醒用户备份。
 14. （2026-09-19）音效相关：

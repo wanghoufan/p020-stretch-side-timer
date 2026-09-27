@@ -27,6 +27,7 @@ import {
 import {
   BACKGROUND_LABEL_KEY,
   LANGUAGES,
+  languageLabel,
   PER_SIDE_LABEL_KEY,
   PET_NAME_KEY,
   SOUND_LABEL_KEY,
@@ -236,7 +237,7 @@ export default function SettingsScreen() {
               key={lang.code}
               styles={styles}
               active={settings.language === lang.code}
-              label={lang.label}
+              label={languageLabel(lang, t)}
               onPress={() => update('language', lang.code)}
             />
           ))}
