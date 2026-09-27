@@ -35,7 +35,7 @@ RNApp/
 ├── App.tsx                # 入口：SettingsProvider + I18nProvider + HistoryProvider + NavigationContainer + Tabs
 ├── plugins/
 │   └── withAndroidAppLocales.js  # Expo config plugin：prebuild 后生成 res/values-en/strings.xml（app_name）
-├── app.json               # plugins 数组含 "./plugins/withAndroidAppLocales"（F8）
+├── app.json               # plugins 数组含 "./plugins/withAndroidAppLocales" 与 "expo-localization"（F8）
 ├── src/
 │   ├── navigation/        # BottomTabs 定义
 │   ├── screens/
@@ -120,8 +120,10 @@ RNApp/
 - `strings.zh.ts`：**key 的唯一真源**，导出 `zh` 与 `type StringKey`
 - `strings.en.ts`：标注 `Record<StringKey, string>`，**漏翻一个 key 直接 tsc 报错**（QA 反证：删任一 en key → 编译失败）
 - `index.tsx`：
-  - `LANGUAGES` 常量表（`{ code, label, strings }`）→ `LanguageCode` 由表推导，加一行即扩展
-  - `I18nProvider`：语言唯一真源是 `SettingsContext.settings.language`，切换 → Provider 重渲染 → 整棵界面树换表，**只重渲染、不 remount**
+  - `LANGUAGES` 常量表（`{ code, label, strings }`）→ `LanguageCode` 由表推导，加一行即扩展；**首位是伪项 `{ code: 'system', label: null, strings: null }`**（跟随系统，非语言、无文案表，其 label 走 `languageLabel(lang, t)` 取 `settings.language.system`）
+  - `resolveLanguage(code, systemLocaleTag)`：**纯函数**，取系统 tag 的语言前缀（兼容 `EN-us` / `zh_CN`，tag 为 null/undefined/空串也容错）命中已支持语言则跟随，否则回落 `'zh'`；`FOLLOWABLE_CODES` 由 `LANGUAGES` 推导 —— **加 ja 后 `system + ja-JP` 自动返回 ja，无需改解析代码**
+  - `I18nProvider`：语言唯一真源是 `SettingsContext.settings.language`，经 `resolveLanguage` 解析为实际语言 → Provider 重渲染 → 整棵界面树换表，**只重渲染、不 remount**
+  - 系统语言用 `expo-localization` 的 **`useLocales()`** 取（自带订阅，系统语言运行期变化也重渲染；**不能只在挂载时读一次** —— config plugin 给 Activity 补了 `configChanges=locale`，Activity 不重建，读一次就永不跟随）。`systemLocaleTag` prop 保留注入能力供单测，prop 优先
   - `useT()` / `useI18n()`：`t(key, params)`，文案里 `{名字}` 占位符由 params 替换
   - id → 文案 key 映射表（`PET_NAME_KEY` / `SOUND_LABEL_KEY` / `BACKGROUND_LABEL_KEY` / `THEME_LABEL_KEY` / `PER_SIDE_LABEL_KEY`），用 `Record<Id, StringKey>` 标注：新增音效/动物/主题/背景音却忘登记 key 会在 tsc 报错
 - 占位符替换用 `split/join` 逐名替换（无第三方 i18n 库，Expo 57 亦不内置）
@@ -129,13 +131,15 @@ RNApp/
 - 依赖方向：i18n → store（取 language）；store 侧引用 `LanguageCode` 只用 `import type`，编译期擦除，无运行期环
 
 ### 状态与持久化
-- `Settings.language` 存 `@stretch/settings`（**不新增 AsyncStorage 键**），默认 `'zh'`；文案本体是编译期代码，不入存储
+- `Settings.language` 存 `@stretch/settings`（**不新增 AsyncStorage 键**），取值 `'system' | 'zh' | 'en'`，**默认 `'system'`**；文案本体是编译期代码，不入存储
+- 依赖：新增 **`expo-localization`（`~57.0.2`，`npx expo install` 按 SDK 57 锁定）**，是项目首个 locale 依赖；`app.json` 的 `plugins` 数组由 `expo install` 自动追加 `"expo-localization"`（其 plugin 会给 Activity 补 `configChanges=locale|layoutDirection`，即上述"不能只读一次"的原因）
 - 模式快照**不含** language（全局偏好）；`modeSettingsToSettings` 显式带当前语言回去，避免启用模式把语言打回默认
-- 加载时 `{ ...DEFAULT_SETTINGS, ...parsed }`，存量数据缺 language 自动回落 `'zh'`，不报错
+- 加载时 `{ ...DEFAULT_SETTINGS, ...parsed }`：已存 `'zh'`/`'en'` 的用户升级后语言不变；**缺 language 字段的按 `'system'` 处理**（中文系统用户无感，英文系统用户升级后直接得英文界面，可手动切回），不报错
 
 ### 系统级文案（config plugin）
 - `plugins/withAndroidAppLocales.js`：`withDangerousMod(config, ['android', ...])`，在 prebuild 之后写 `app/src/main/res/values-en/strings.xml`（`app_name = Stretch Timer`）
-- `app.json` 的 `plugins` 数组注册 `"./plugins/withAndroidAppLocales"`
+- `app.json` 的 `plugins` 数组注册 `"./plugins/withAndroidAppLocales"` 与 `"expo-localization"`
+- **构建路径分叉（P2，已判定不处理）**：`eas build --local` 每次重跑 prebuild，plugin 副作用必生效；但本地直构（`npx expo run:android`）不跑 prebuild、**不含** plugin 的 manifest 副作用。验收一律以 `eas build --local` 产物为准
 - **`android/app/src/main/res/values-en/strings.xml` 手改无效**：`eas build --local` 在临时目录重跑 prebuild 会冲掉；仓里那份只是不走 prebuild 直接 gradle 构建时的回退副本
 - 验证判据用 `aapt2 dump resources`（看 `() 中文 / (en) 英文`）与 `aapt dump badging`（看 `application-label-en`）；`unzip -l | grep values-en` 对 string 资源天然无效，别当判据
 
