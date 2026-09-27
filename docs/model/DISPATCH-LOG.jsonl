@@ -1,0 +1,9 @@
+{"date":"2026-09-27","task":"T13 builder 首版","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":""}
+{"date":"2026-09-27","task":"T13 code review","role":"code-reviewer","model":"codebuddy/glm-5.3-flash","used":"主","runtime":"codebuddy","result":"PASS","note":""}
+{"date":"2026-09-27","task":"T13 builder P2 返工","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"返工续原任务，codebuddy 非交互无 resume"}
+{"date":"2026-09-27","task":"T13 静态 QA","role":"qa","model":"codex/gpt-6-luna","used":"主","runtime":"codex","result":"PASS","note":"QA 专用解禁沙箱 -s danger-full-access"}
+{"date":"2026-09-27","task":"T13 真机 QA","role":"qa","model":"opencode-go/space-bunny-free","used":"主","runtime":"本窗口","result":"PASS","note":"按 override 表真机QA走本窗口 bash 直驱（adb）"}
+{"date":"2026-09-27","task":"T13 builder 修复 P1 values-en 进包","role":"builder","model":"codebuddy/deepseek-v4.1-flash","used":"主","runtime":"codebuddy","result":"PASS","note":"新增 plugins/withAndroidAppLocales.js；内含一次本地 eas build 验证"}
+{"date":"2026-09-27","task":"T13 全链复检","role":"supervisor","model":"opencode-go/muse-spark-1.3-contributor","used":"主","runtime":"opencode","result":"PASS","note":"六查通过，3条P2已闭环，真机P1已闭环；要求补记HANDOFF与账本"}
+{"date":"2026-09-27","task":"T13 经验记录","role":"experience-recorder","model":"opencode-go/space-bunny-free","used":"主","runtime":"opencode","result":"PASS","note":""}
+{"date":"2026-09-27","task":"T13 收口洁癖（重派）","role":"neat-freak","model":"opencode-go/space-bunny-free","used":"主","runtime":"opencode","result":"PASS","note":"首轮访问 /tmp 被权限拒后未完成，重派禁外目录后完成"}

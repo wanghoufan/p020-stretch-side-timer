@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Pet } from '../components/Pet';
 import { PromptBanner } from '../components/PromptBanner';
 import { formatTime } from '../constants';
+import { useT } from '../i18n';
 import { useSettings } from '../store/SettingsContext';
 import { useTheme } from '../theme/useTheme';
 import { useTimer } from '../timer/useTimer';
@@ -11,6 +12,7 @@ import { useTimer } from '../timer/useTimer';
 export default function TimerScreen() {
   const { settings, modes, activeModeId, setActiveMode } = useSettings();
   const theme = useTheme();
+  const t = useT();
   const { phase, remainingSec, side, totalSides, start, pause, resume, stop, reset } = useTimer();
 
   const petState: 'idle' | 'running' | 'paused' | 'remind' | 'finished' =
@@ -24,7 +26,7 @@ export default function TimerScreen() {
             ? 'paused'
             : 'idle';
 
-  const title = phase === 'idle' ? '准备好就开始吧' : `第 ${side} / ${totalSides} 边`;
+  const title = phase === 'idle' ? t('timer.ready') : t('timer.side', { side, total: totalSides });
 
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const scrollRef = useRef<ScrollView>(null);
@@ -43,8 +45,8 @@ export default function TimerScreen() {
 
         <Pet pet={settings.pet} state={petState} />
 
-        {phase === 'remind' && <PromptBanner text="换边！" />}
-        {phase === 'finished' && <PromptBanner text="完成啦！" />}
+        {phase === 'remind' && <PromptBanner text={t('prompt.remind')} />}
+        {phase === 'finished' && <PromptBanner text={t('prompt.finished')} />}
 
         <Text style={[styles.countdown, phase === 'remind' && styles.countdownHot]}>
           {formatTime(remainingSec)}
@@ -53,38 +55,38 @@ export default function TimerScreen() {
         <View style={styles.actions}>
           {(phase === 'idle' || phase === 'finished') && (
             <Pressable style={[styles.btn, styles.btnPrimary]} onPress={phase === 'idle' ? start : reset}>
-              <Text style={styles.btnText}>{phase === 'idle' ? '开始' : '再来一次'}</Text>
+              <Text style={styles.btnText}>{phase === 'idle' ? t('timer.start') : t('timer.restart')}</Text>
             </Pressable>
           )}
           {phase === 'running' && (
             <>
               <Pressable style={[styles.btn, styles.btnPrimary]} onPress={pause}>
-                <Text style={styles.btnText}>暂停</Text>
+                <Text style={styles.btnText}>{t('timer.pause')}</Text>
               </Pressable>
               <Pressable style={[styles.btn, styles.btnGhost]} onPress={stop}>
-                <Text style={styles.btnGhostText}>结束</Text>
+                <Text style={styles.btnGhostText}>{t('timer.stop')}</Text>
               </Pressable>
             </>
           )}
           {phase === 'paused' && (
             <>
               <Pressable style={[styles.btn, styles.btnPrimary]} onPress={resume}>
-                <Text style={styles.btnText}>继续</Text>
+                <Text style={styles.btnText}>{t('timer.resume')}</Text>
               </Pressable>
               <Pressable style={[styles.btn, styles.btnGhost]} onPress={stop}>
-                <Text style={styles.btnGhostText}>结束</Text>
+                <Text style={styles.btnGhostText}>{t('timer.stop')}</Text>
               </Pressable>
             </>
           )}
           {phase === 'remind' && (
             <Pressable style={[styles.btn, styles.btnGhost]} onPress={stop}>
-              <Text style={styles.btnGhostText}>结束</Text>
+              <Text style={styles.btnGhostText}>{t('timer.stop')}</Text>
             </Pressable>
           )}
         </View>
 
         <View style={styles.modeBar}>
-          <Text style={styles.modeBarTitle}>模式切换</Text>
+          <Text style={styles.modeBarTitle}>{t('timer.modeSwitch')}</Text>
           <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.modeList}
@@ -95,9 +97,15 @@ export default function TimerScreen() {
             >
               <View style={styles.modeItemContent}>
                 <Text style={[styles.modeItemName, activeModeId === null && styles.modeItemNameActive]}>
-                  默认
+                  {t('timer.defaultMode')}
                 </Text>
-                <Text style={styles.modeItemMeta}>总{settings.totalMinutes} 单{settings.perSideSeconds} 提{settings.alertDurationSec}</Text>
+                <Text style={styles.modeItemMeta}>
+                  {t('timer.modeMeta', {
+                    m: settings.totalMinutes,
+                    s: settings.perSideSeconds,
+                    a: settings.alertDurationSec,
+                  })}
+                </Text>
               </View>
             </Pressable>
             {modes.map((m) => (
@@ -111,7 +119,11 @@ export default function TimerScreen() {
                     {m.name}
                   </Text>
                   <Text style={styles.modeItemMeta}>
-                    总{m.settings.totalMinutes} 单{m.settings.perSideSeconds} 提{m.settings.alertDurationSec}
+                    {t('timer.modeMeta', {
+                      m: m.settings.totalMinutes,
+                      s: m.settings.perSideSeconds,
+                      a: m.settings.alertDurationSec,
+                    })}
                   </Text>
                 </View>
               </Pressable>

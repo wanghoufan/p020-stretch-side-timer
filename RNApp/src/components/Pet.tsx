@@ -1,16 +1,18 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import { PETS, type PetId } from '../constants';
+import { useT, type StringKey } from '../i18n';
 import { useTheme } from '../theme/useTheme';
 
 export type PetState = 'idle' | 'running' | 'paused' | 'remind' | 'finished';
 
-const SUBTITLES: Record<PetState, string> = {
-  idle: '准备好了吗？',
-  running: '专注中…',
-  paused: '暂停中，休息一下',
-  remind: '换边！',
-  finished: '完成啦！',
+/** 状态 → 文案 key（Record 标注保证每个状态都有文案，漏一个即编译报错） */
+const SUBTITLE_KEY: Record<PetState, StringKey> = {
+  idle: 'pet.idle',
+  running: 'pet.running',
+  paused: 'pet.paused',
+  remind: 'pet.remind',
+  finished: 'pet.finished',
 };
 
 const EXTRAS: Record<PetState, string> = {
@@ -27,6 +29,7 @@ const EXTRAS: Record<PetState, string> = {
  */
 export function Pet({ pet, state }: { pet: PetId; state: PetState }) {
   const theme = useTheme();
+  const t = useT();
   const emoji = PETS.find((p) => p.id === pet)?.emoji ?? '🐶';
   const scale = useRef(new Animated.Value(1)).current;
 
@@ -88,7 +91,7 @@ export function Pet({ pet, state }: { pet: PetId; state: PetState }) {
         <Animated.Text style={[styles.pet, { transform: [{ scale }] }]}>{emoji}</Animated.Text>
         <Text style={styles.extra}>{EXTRAS[state]}</Text>
       </View>
-      <Text style={styles.subtitle}>{SUBTITLES[state]}</Text>
+      <Text style={styles.subtitle}>{t(SUBTITLE_KEY[state])}</Text>
     </View>
   );
 }

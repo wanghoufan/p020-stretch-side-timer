@@ -12,7 +12,7 @@
 - session ID：
 - 模型精确ID：
 - Runtime：
-- 原生CUA是否实际注入（Codex确认是否真实存在 `mcp__cua_repl.js`；codebuddy无结果如实记“未注入”，禁伪称已存在）：
+- 原生CUA是否实际注入（确认是否真实存在 `mcp__cua_repl.js`，无结果如实记“未注入”，禁伪称已存在）：
 - 可用工具精确名称：
 - CLI备用入口是否存在（Bash→orca computer CLI）：
 - Orca Runtime（`orca status --json` 实时结果，禁沿用旧报告）：state／reachable／connectionState：

@@ -1,7 +1,7 @@
 # 技术计划（plan.md）
 
-> 版本：V1.6 ｜ 依据：spec.md V1.6（不与其冲突）；遵守 constitution.md。
-> 变更记录：V1.6（2026-09-19）背景音 UI 补全（SettingsScreen）：轻音乐分组新增独立「关闭」Chip（与「倒计时声音」分组的「关闭」绑定同一 `backgroundSound === 'off'` 状态，二者同时高亮，属预期——关闭是全局的）；环境音与轻音乐两组 Group 标题补齐"点击可试听"；设置页底部提示改写为说明三组均可试听、试听时长差异、循环与换边暂停行为、以及「关闭」语义。模式编辑 Modal 同步。V1.5（2026-09-19）背景音新增"轻音乐"类：assets/music/ 放 4 首 mp3（源自 Incompetech，CC BY 4.0），BACKGROUND_SOUNDS 每项加 `group` 字段（环境音/轻音乐），SettingsScreen 主列表与模式编辑 Modal 均按 group 分块渲染，新增 MUSIC_ATTRIBUTION 署名常量并在设置页底部展示；新增 scripts/prepare-music.py（首尾交叉淡化做无缝循环 + ffmpeg loudnorm 响度归一 + 转码）；试听时长按 group 区分（环境音 2.5s / 轻音乐 20s）。V1.4（2026-09-19）音效方案重做：换边音由 5 种扩为 8 种（新增 警报/升调/闹钟），全部改由 `RNApp/scripts/generate-sounds.py` 合成（峰值 -0.3dBFS、主频 1-3kHz、多脉冲长时长）；新增音频会话配置 `configureAudioMode()`（`duckOthers`，提醒时压低其他 App 音频、播完恢复，同时保证静音模式下提醒仍响且走扬声器）；sounds/playSound.ts 修复 seekTo 异步与 play 同步导致的二次起播无声；assets/sounds/ 旧素材归档至 artifacts/sounds-v1-backup/。V1.3（2026-09-15）新增 F7 模式/分组：src/constants.ts（Mode 接口）、SettingsContext（modes 状态 + CRUD）、TimerScreen（垂直模式列表）、SettingsScreen（模式管理 + 保存当前为模式 + 时间流速滑块）、useTimer（按流速调整计时）。V1.2（2026-09-15）新增主题系统：src/theme/（themes.ts 色板 token + useTheme hook），SettingsContext 增 theme 字段，全部页面 color 走主题 token 禁写死。V1.1（2026-09-14 neat-freak 对齐）计时实现改为"endAt 绝对时间戳校正 + AppState 回前台结算"（P2 已实现）；音效资源由 5 个扩为 8 个（5 换边音 + 3 背景音）；新增倒计时背景音播放方案。V1.0 为开发基线。
+> 版本：V1.7 ｜ 依据：spec.md V1.7（不与其冲突）；遵守 constitution.md。
+> 变更记录：V1.7（2026-09-27）新增 F8 界面多语言（中文/英文）实现方案：`src/i18n/`（`strings.zh.ts` / `strings.en.ts` / `index.tsx` 提供 `I18nProvider` + `useT()`）；`LANGUAGES` 常量表（code/label），新增语言 = 加一个文件 + 表加一行；`SettingsContext` 增 `language` 字段（存 `@stretch/settings`，缺省 'zh'）；`App.tsx` 在最外层包 `I18nProvider`，语言值取自 SettingsContext，切换即整树重渲染、**不重启不闪屏**；设置页新增「界面语言」分组；Android 桌面图标名（`app_name`）的系统级文案由 **Expo config plugin `plugins/withAndroidAppLocales.js`**（`withDangerousMod` 在 prebuild 之后写 `res/values-en/strings.xml`）生成并在 `app.json` 的 plugins 注册——**不能手写 `android/app/src/main/res/values-en/strings.xml` 作真源**，`eas build --local` 会在临时目录重跑 prebuild 冲掉手改文件（T13 真机 P1 根因）。V1.6（2026-09-19）背景音 UI 补全（SettingsScreen）：轻音乐分组新增独立「关闭」Chip（与「倒计时声音」分组的「关闭」绑定同一 `backgroundSound === 'off'` 状态，二者同时高亮，属预期——关闭是全局的）；环境音与轻音乐两组 Group 标题补齐"点击可试听"；设置页底部提示改写为说明三组均可试听、试听时长差异、循环与换边暂停行为、以及「关闭」语义。模式编辑 Modal 同步。V1.5（2026-09-19）背景音新增"轻音乐"类：assets/music/ 放 4 首 mp3（源自 Incompetech，CC BY 4.0），BACKGROUND_SOUNDS 每项加 `group` 字段（环境音/轻音乐），SettingsScreen 主列表与模式编辑 Modal 均按 group 分块渲染，新增 MUSIC_ATTRIBUTION 署名常量并在设置页底部展示；新增 scripts/prepare-music.py（首尾交叉淡化做无缝循环 + ffmpeg loudnorm 响度归一 + 转码）；试听时长按 group 区分（环境音 2.5s / 轻音乐 20s）。V1.4（2026-09-19）音效方案重做：换边音由 5 种扩为 8 种（新增 警报/升调/闹钟），全部改由 `RNApp/scripts/generate-sounds.py` 合成（峰值 -0.3dBFS、主频 1-3kHz、多脉冲长时长）；新增音频会话配置 `configureAudioMode()`（`duckOthers`，提醒时压低其他 App 音频、播完恢复，同时保证静音模式下提醒仍响且走扬声器）；sounds/playSound.ts 修复 seekTo 异步与 play 同步导致的二次起播无声；assets/sounds/ 旧素材归档至 artifacts/sounds-v1-backup/。V1.3（2026-09-15）新增 F7 模式/分组：src/constants.ts（Mode 接口）、SettingsContext（modes 状态 + CRUD）、TimerScreen（垂直模式列表）、SettingsScreen（模式管理 + 保存当前为模式 + 时间流速滑块）、useTimer（按流速调整计时）。V1.2（2026-09-15）新增主题系统：src/theme/（themes.ts 色板 token + useTheme hook），SettingsContext 增 theme 字段，全部页面 color 走主题 token 禁写死。V1.1（2026-09-14 neat-freak 对齐）计时实现改为"endAt 绝对时间戳校正 + AppState 回前台结算"（P2 已实现）；音效资源由 5 个扩为 8 个（5 换边音 + 3 背景音）；新增倒计时背景音播放方案。V1.0 为开发基线。
 
 ## 技术选型
 
@@ -31,8 +31,11 @@ Bottom Tabs
 
 ### 目录结构
 ```
-app-glm/RNApp/
-├── App.tsx                # 入口：SafeAreaProvider + NavigationContainer + Tabs
+RNApp/
+├── App.tsx                # 入口：SettingsProvider + I18nProvider + HistoryProvider + NavigationContainer + Tabs
+├── plugins/
+│   └── withAndroidAppLocales.js  # Expo config plugin：prebuild 后生成 res/values-en/strings.xml（app_name）
+├── app.json               # plugins 数组含 "./plugins/withAndroidAppLocales"（F8）
 ├── src/
 │   ├── navigation/        # BottomTabs 定义
 │   ├── screens/
@@ -41,16 +44,15 @@ app-glm/RNApp/
 │   │   └── HistoryScreen.tsx
 │   ├── components/
 │   │   ├── Pet.tsx        # 小动物：emoji + 4 状态 + 动画
-│   │   ├── CountdownRing.tsx  # 大倒计时（环形/大字）
 │   │   └── PromptBanner.tsx   # 换边/完成 大字提示
 │   ├── timer/
-│   │   ├── TimerMachine.tsx   # 计时状态机 + 循环换边逻辑
-│   │   └── useTimer.ts
+│   │   └── useTimer.ts    # 计时状态机 + 循环换边逻辑（endAt 校正）
 │   ├── store/
-│   │   ├── SettingsContext.tsx # 设置 + 持久化
+│   │   ├── SettingsContext.tsx # 设置 + 模式 + 语言 + 持久化
 │   │   └── HistoryContext.tsx  # 历史记录 + 持久化
 │   ├── sounds/            # 音效选择 + 播放封装（expo-audio）
 │   ├── theme/             # 主题系统：themes.ts（4 套色板 token）+ useTheme.ts（取色 hook）
+│   ├── i18n/              # 界面多语言：strings.zh.ts（key 真源）/ strings.en.ts / index.tsx（Provider + 语言表 + useT）
 │   └── constants.ts       # 总时长/单边/音效/提醒时长 选项常量（与 spec 一致）
 ```
 
@@ -107,6 +109,35 @@ app-glm/RNApp/
 - 计时器按 `流速 × 实际时间` 递减：`endAt = Date.now() + (perSideSeconds / timeSpeed) * 1000`
 - 剩余秒数计算：`Math.ceil(realRemaining * timeSpeed)`
 - 默认 1 倍速，100 倍速可在 3 秒内走完 100 秒显示时间
+
+## F8 界面多语言实现方案
+
+### 技术路线纠偏（重要）
+- 用户最初设想的是原生做法（`values/strings.xml` + `values-en` + DataStore + Activity recreate），**本项目不适用**：Expo/React Native（RN 0.86 / Expo 57）的界面文字由 JS 渲染，**不经过 `res/values`**，原生 `values-en` 对 App 内界面无效。
+- 故界面文案走 **RN 侧 i18n 层**（`src/i18n/`）；原生 `values-en/strings.xml` 只承担**系统级文案**（桌面图标名 `app_name`）跟随系统语言。
+
+### 文案层（src/i18n/）
+- `strings.zh.ts`：**key 的唯一真源**，导出 `zh` 与 `type StringKey`
+- `strings.en.ts`：标注 `Record<StringKey, string>`，**漏翻一个 key 直接 tsc 报错**（QA 反证：删任一 en key → 编译失败）
+- `index.tsx`：
+  - `LANGUAGES` 常量表（`{ code, label, strings }`）→ `LanguageCode` 由表推导，加一行即扩展
+  - `I18nProvider`：语言唯一真源是 `SettingsContext.settings.language`，切换 → Provider 重渲染 → 整棵界面树换表，**只重渲染、不 remount**
+  - `useT()` / `useI18n()`：`t(key, params)`，文案里 `{名字}` 占位符由 params 替换
+  - id → 文案 key 映射表（`PET_NAME_KEY` / `SOUND_LABEL_KEY` / `BACKGROUND_LABEL_KEY` / `THEME_LABEL_KEY` / `PER_SIDE_LABEL_KEY`），用 `Record<Id, StringKey>` 标注：新增音效/动物/主题/背景音却忘登记 key 会在 tsc 报错
+- 占位符替换用 `split/join` 逐名替换（无第三方 i18n 库，Expo 57 亦不内置）
+- `label` 用各语言自称（中文/English），属语言表自身常量，不进 strings 文案表
+- 依赖方向：i18n → store（取 language）；store 侧引用 `LanguageCode` 只用 `import type`，编译期擦除，无运行期环
+
+### 状态与持久化
+- `Settings.language` 存 `@stretch/settings`（**不新增 AsyncStorage 键**），默认 `'zh'`；文案本体是编译期代码，不入存储
+- 模式快照**不含** language（全局偏好）；`modeSettingsToSettings` 显式带当前语言回去，避免启用模式把语言打回默认
+- 加载时 `{ ...DEFAULT_SETTINGS, ...parsed }`，存量数据缺 language 自动回落 `'zh'`，不报错
+
+### 系统级文案（config plugin）
+- `plugins/withAndroidAppLocales.js`：`withDangerousMod(config, ['android', ...])`，在 prebuild 之后写 `app/src/main/res/values-en/strings.xml`（`app_name = Stretch Timer`）
+- `app.json` 的 `plugins` 数组注册 `"./plugins/withAndroidAppLocales"`
+- **`android/app/src/main/res/values-en/strings.xml` 手改无效**：`eas build --local` 在临时目录重跑 prebuild 会冲掉；仓里那份只是不走 prebuild 直接 gradle 构建时的回退副本
+- 验证判据用 `aapt2 dump resources`（看 `() 中文 / (en) 英文`）与 `aapt dump badging`（看 `application-label-en`）；`unzip -l | grep values-en` 对 string 资源天然无效，别当判据
 
 ## 风险与对策
 

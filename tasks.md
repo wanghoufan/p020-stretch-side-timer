@@ -1,10 +1,11 @@
 # 任务清单（tasks.md）
 
-> 版本：V1.6 ｜ 依据：spec.md V1.6 + plan.md V1.6。每项可独立执行与验收。
+> 版本：V1.7 ｜ 依据：spec.md V1.7 + plan.md V1.7。每项可独立执行与验收。
 > 状态（2026-09-15）：T1~T11 全部完成并通过 Android 真机验收（对应 spec DoD）；T12 模式/分组功能已完成并通过真机验收，APK 已推送至手机。
 > 状态（2026-09-19）：T6 音效重做（spec F3 扩为 8 种 + 整体提响度）代码完成并通过 TypeScript 编译与真机加载验证；换边提醒在真机的听感验收待用户确认。
 > 状态（2026-09-19）：背景音新增轻音乐类（4 首，CC BY 4.0）——素材处理、分组 UI、署名文案、试听时长区分均完成，已通过 TypeScript 编译与真机验证（分组渲染正确、选中切换正确、mp3 可加载播放）；循环无缝度与听感待用户确认。
 > 状态（2026-09-19）：背景音 UI 补全 —— 轻音乐分组新增独立「关闭」入口、两组标题均标注"点击可试听"、底部提示改写说明试听时长与循环行为；已通过 tsc，待重新打包推送。
+> 状态（2026-09-27）：T13 界面多语言（中文/英文）完成并通过真机验收（App V1.6.0 / versionCode 4，APK 已推送本次在线的两台红米：IN9LZTAYV4UGU4JF 目视全验收、indq5xfi6hovay4d 屏幕全黑仅安装+dumpsys 校验）。链路：builder → code-reviewer（P0=0 P1=0）→ 静态 QA（含漏翻反证）→ 真机 QA → builder 修 P1（values-en 未进包，改 config plugin）→ supervisor 复检 PASS，rework=0。**遗留 P2**：历史记录页英文 `1 sides` 单复数未处理（英文观感问题，不影响功能）。第二台真机（indq5xfi6hovay4d）因屏幕故障全黑无法出图，**该台目视验收待屏幕恢复后补做**。
 
 | Task | 内容 | 验收标准 |
 |---|---|---|
@@ -20,7 +21,8 @@
 | T10 | 全局验收 | 对照 spec DoD 表逐条在真机/模拟器验收；3 页可切换、无崩溃、移动端布局 |
 | T11 | 多主题风格：src/theme/ 色板 token + useTheme hook + Settings.theme 字段 + 设置页主题分组 + 全页面动态取色 | 4 套主题（暖萌/科技/极简/杂志）切换后计时/设置/记录/底部导航/状态栏全部跟随变色；选择持久化重启不丢；切换不改变计时行为（spec F6 DoD） |
 | T12 | 模式/分组功能：Mode 数据模型 + SettingsContext CRUD + 首页垂直模式列表 + 设置页模式管理（新建/编辑/复制/删除/保存当前为模式）+ 时间流速 1-100 倍 | 首页模式列表垂直排列，每条显示完整信息（总X 单Y 提Z）；设置页可 CRUD 模式；保存当前为模式自动生成名称【总X 单Y 提Z—】；时间流速 1-100 倍可调，100 倍速可在 3 秒内走完 100 秒显示时间；模式数据持久化（spec F7 DoD） |
+| T13 | 界面多语言（中文/英文）：`src/i18n/`（strings.zh.ts / strings.en.ts / index.tsx + LANGUAGES 表 + useT）+ `SettingsContext.language` 字段 + `App.tsx` 顶层 `I18nProvider` + 设置页「界面语言」分组 + 全部界面文字替换为 `t(key)` + config plugin `plugins/withAndroidAppLocales.js` 生成 `values-en/strings.xml`（桌面图标名 app_name） | 设置页可切中文/English；**不重启 App** 切到英文后计时页/设置页/历史页/底部导航/模式编辑弹窗/提示语全部英文；杀 App 重开仍为英文；切回中文立即恢复；设置/模式/历史数据不丢；计时不中断；新增第三语言只需加一个 strings 文件 + LANGUAGES 加一行（spec F8 DoD） |
 
 ## 执行顺序
 
-T1 → T2 → T3 → T4 → T5 → T6 → T7 → T8 → T9 → T10 → T11（T5/T6/T7 在 T4 完成后可并行推进；T11 在 T8 完成后可推进，依赖 SettingsContext）。
+T1 → T2 → T3 → T4 → T5 → T6 → T7 → T8 → T9 → T10 → T11（T5/T6/T7 在 T4 完成后可并行推进；T11 在 T8 完成后可推进，依赖 SettingsContext）→ T13（依赖 T3/T8，依赖 T11 的 settings 持久化结构）。

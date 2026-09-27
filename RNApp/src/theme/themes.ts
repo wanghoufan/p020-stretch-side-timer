@@ -1,12 +1,14 @@
 /**
  * 主题系统：4 套风格（暖萌经典 / 科技 / 极简 / 杂志）。
  * 所有屏幕组件一律通过 useTheme() 取色，禁止在组件内写死颜色。
+ *
+ * 显示名（暖萌/科技/极简/杂志）不进本文件：主题名文案在 i18n（key 映射见 src/i18n/index.tsx 的 THEME_LABEL_KEY），
+ * 保证「文案 key 来源单一」（spec F8）。
  */
 export type ThemeId = 'default' | 'tech' | 'minimal' | 'magazine';
 
 export interface Theme {
   id: ThemeId;
-  label: string;
   emoji: string;
   statusBarStyle: 'dark' | 'light';
   colors: {
@@ -34,7 +36,6 @@ export interface Theme {
 export const THEMES: readonly Theme[] = [
   {
     id: 'default',
-    label: '暖萌',
     emoji: '🌼',
     statusBarStyle: 'dark',
     colors: {
@@ -60,7 +61,6 @@ export const THEMES: readonly Theme[] = [
   },
   {
     id: 'tech',
-    label: '科技',
     emoji: '⚡',
     statusBarStyle: 'light',
     colors: {
@@ -86,7 +86,6 @@ export const THEMES: readonly Theme[] = [
   },
   {
     id: 'minimal',
-    label: '极简',
     emoji: '◽',
     statusBarStyle: 'dark',
     colors: {
@@ -112,7 +111,6 @@ export const THEMES: readonly Theme[] = [
   },
   {
     id: 'magazine',
-    label: '杂志',
     emoji: '📰',
     statusBarStyle: 'dark',
     colors: {

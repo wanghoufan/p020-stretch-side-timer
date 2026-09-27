@@ -2,7 +2,7 @@
   "expo": {
     "name": "拉伸换边计时器",
     "slug": "stretch-side-timer",
-    "version": "1.5.1",
+    "version": "1.6.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -11,7 +11,7 @@
     },
     "android": {
       "package": "com.stretch.sidetimer",
-      "versionCode": 3,
+      "versionCode": 4,
       "adaptiveIcon": {
         "backgroundColor": "#FFD9C7",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -30,7 +30,8 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-audio"
+      "expo-audio",
+      "./plugins/withAndroidAppLocales"
     ],
     "extra": {
       "eas": {

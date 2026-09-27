@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useT, type TFn } from '../i18n';
 import { useHistory } from '../store/HistoryContext';
 import { useTheme } from '../theme/useTheme';
 
@@ -10,20 +11,23 @@ const fmtDate = (iso: string): string => {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 };
 
-const fmtSide = (sec: number): string => (sec >= 60 ? `${sec / 60} 分钟` : `${sec} 秒`);
+/** 单边时长展示（与设置页档位同一套文案 key，单位随语言） */
+const fmtSide = (sec: number, t: TFn): string =>
+  sec >= 60 ? t('settings.minutesChip', { n: sec / 60 }) : t('settings.secondsChip', { n: sec });
 
 export default function HistoryScreen() {
   const { records, deleteRecord, clearAll } = useHistory();
   const theme = useTheme();
+  const t = useT();
   const styles = useMemo(() => makeStyles(theme), [theme]);
 
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.headerRow}>
-        <Text style={styles.header}>拉伸记录</Text>
+        <Text style={styles.header}>{t('history.header')}</Text>
         {records.length > 0 && (
           <Pressable onPress={clearAll} style={styles.clearBtn}>
-            <Text style={styles.clearText}>清空</Text>
+            <Text style={styles.clearText}>{t('history.clear')}</Text>
           </Pressable>
         )}
       </View>
@@ -31,7 +35,7 @@ export default function HistoryScreen() {
       {records.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyEmoji}>📭</Text>
-          <Text style={styles.emptyText}>还没有记录，去完成一次拉伸吧</Text>
+          <Text style={styles.emptyText}>{t('history.empty')}</Text>
         </View>
       ) : (
         <FlatList
@@ -43,7 +47,11 @@ export default function HistoryScreen() {
               <View style={styles.rowMain}>
                 <Text style={styles.rowDate}>{fmtDate(item.date)}</Text>
                 <Text style={styles.rowDesc}>
-                  总时长 {item.totalMinutes} 分钟 · 完成 {item.completedSides} 边 · 每边 {fmtSide(item.perSideSeconds)}
+                  {t('history.rowDesc', {
+                    total: item.totalMinutes,
+                    sides: item.completedSides,
+                    per: fmtSide(item.perSideSeconds, t),
+                  })}
                 </Text>
               </View>
               <Pressable
@@ -51,7 +59,7 @@ export default function HistoryScreen() {
                 hitSlop={10}
                 style={styles.deleteBtn}
               >
-                <Text style={styles.deleteText}>删除</Text>
+                <Text style={styles.deleteText}>{t('history.delete')}</Text>
               </Pressable>
             </View>
           )}

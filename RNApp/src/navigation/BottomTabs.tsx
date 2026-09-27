@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import TimerScreen from '../screens/TimerScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import HistoryScreen from '../screens/HistoryScreen';
+import { useT } from '../i18n';
 import { useTheme } from '../theme/useTheme';
 
 export type RootTabParamList = {
@@ -23,6 +24,7 @@ function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
 
 export default function RootNavigator() {
   const theme = useTheme();
+  const t = useT();
   return (
     <SafeAreaProvider>
       <NavigationContainer>
@@ -39,7 +41,7 @@ export default function RootNavigator() {
             name="Timer"
             component={TimerScreen}
             options={{
-              title: '计时',
+              title: t('tab.timer'),
               tabBarIcon: ({ focused }) => <TabIcon emoji="⏱️" focused={focused} />,
             }}
           />
@@ -47,7 +49,7 @@ export default function RootNavigator() {
             name="Settings"
             component={SettingsScreen}
             options={{
-              title: '设置',
+              title: t('tab.settings'),
               tabBarIcon: ({ focused }) => <TabIcon emoji="🎛️" focused={focused} />,
             }}
           />
@@ -55,7 +57,7 @@ export default function RootNavigator() {
             name="History"
             component={HistoryScreen}
             options={{
-              title: '记录',
+              title: t('tab.history'),
               tabBarIcon: ({ focused }) => <TabIcon emoji="📋" focused={focused} />,
             }}
           />

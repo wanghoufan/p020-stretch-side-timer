@@ -1,10 +1,25 @@
 # HANDOFF｜交接
 
-- Captured at：2026-09-19
-- PROJECT_PHASE：DEVELOP 暂停
-- DEV_BASELINE：SDD 五份文档 V1.6
-- Stage ID：TASK-2-MVP
-- 当前状态：开发暂时结束，可随时恢复。2026-09-19 完成音效重做 + 轻音乐背景音 + 背景音 UI 补全，已本地构建并推送三台真机（最新 V1.5.1）
+- Captured at：2026-09-27
+- PROJECT_PHASE：DEVELOP（T13 多语言已完成并通过真机验收，链条待收尾派经验/neat）
+- DEV_BASELINE：SDD **四份**带版本文档 V1.7（`spec.md` / `plan.md` / `data-model.md` / `tasks.md`）；另 `constitution.md` 为长期原则底线、无版本号，DEV 期间不随 SDD 升版
+- Stage ID：TASK-2-MVP / T13-多语言
+- 当前状态：2026-09-27 完成 F8 界面多语言（中文/英文），本地构建 V1.6.0（versionCode 4）并推送两台真机。CHANGE_REQUEST: B（新增 F8 功能，用户已拍板架构「方案 A RN i18n 层」+ 翻译口径；属局部功能变化，更新局部 Requirement/DoD 后留 DEVELOP，未召 Sol Planner）
+
+## 零、T13 界面多语言（F8，2026-09-27，已完成）
+
+- 需求：老外可在设置里切 English，整个 App 所有可见文字立即变英文、不重启 App；同时把多语言结构对开。
+- **技术路线纠偏（重要）**：用户最初给的 `values/strings.xml` + `values-en` + DataStore + Activity recreate 是原生 Android 做法；本项目是 Expo/React Native（RN 0.86 / Expo 57），RN 界面文字**不经过 `res/values`**，原生方案在 App 内无效。改为 RN 侧 i18n 层：`RNApp/src/i18n/`（`strings.zh.ts` 为 key 唯一来源、`strings.en.ts` 标 `Record<StringKey, string>` 漏翻即 tsc 报错、`index.tsx` 出 `LANGUAGES` + `I18nProvider` + `useT()`）；语言存 `@stretch/settings` 的 `language` 字段（默认 zh，**不进模式快照**），`App.tsx` 顶层包 `I18nProvider`，切换只触发重渲染、不 remount。
+- **加第三语言 = 一个文件 + 一行**：新建 `src/i18n/strings.<code>.ts`（完整 `Record<StringKey, string>`）+ `LANGUAGES` 加一行 `{ code, label, strings }`；`LanguageCode` 由表推导自动扩展，设置页选项 `LANGUAGES.map` 自动出现，页面代码零改动。
+- 翻译口径：静态界面文字全译；4 首轻音乐保留英文原曲名 + 中文注解（`Senbazuru (禅意古筝)` 等，CC BY 4.0 署名不删减）；音效名/动物名/主题名/时长档位按界面语言译。
+- **踩坑 P1（已修）**：builder 手写的 `android/app/src/main/res/values-en/strings.xml` **没进 APK** —— `eas build --local` 会在临时目录重跑 prebuild 冲掉手写 res。后果是英文系统下桌面图标名 fallback 中文。修法：新增 `RNApp/plugins/withAndroidAppLocales.js`（`withDangerousMod` 在 prebuild 后写 values-en/strings.xml），`app.json` plugins 加 `"./plugins/withAndroidAppLocales"`。**验证判据用 aapt/aapt2**（`aapt2 dump resources` 看 `() 中文 / (en) 英文`；`aapt dump badging` 看 `application-label-en:'Stretch Timer'`）；`unzip -l | grep values-en` 对 string 资源**天然无效**（string 编译进 resources.arsc 且 res/ 路径混淆），别再拿它当判据。
+- 真机验收（第一台 IN9LZTAYV4UGU4JF / 22041216UC，目视逐条过）：中文界面正常且存量数据完整 → 设置页切 English 后三页 + 底部导航 + 模式模板英文形态（`T10 S60 A3`）立即全英文、无重启无闪白屏无溢出 → 强杀重开仍英文（持久化 OK）→ 计时进行中（00:49 / 第 1/10 边）切回中文，计时未中断未归零 → 测试计时未完成整边（completedSides=0）故未写入历史，**未污染真实数据**。
+- 残留风险：第二台（indq5xfi6hovay4d）安装成功、dumpsys 校验 1.6.0/code 4，但该机屏幕全黑无法出图（`mWakefulness=Awake` 而截图最大亮度 0，设备侧问题，非 App 缺陷），**该台目视验收待屏幕恢复后补看**。
+- 已知小瑕疵（未修，英文观感 P2）：历史记录页英文显示 `1 sides`（单复数未处理，`history.rowDesc` 文案模板硬写 `sides`）。目视：英文历史记录页 Delete/Clear 等表头与操作标签正常，仅 `1 sides` 单复数未处理。
+- 产物：`artifacts/拉伸换边计时器丨V1.6丨多语言丨APK丨本地构建.apk`，92516870 字节，SHA-256 `05770ddb5087f12f54d8a6c2678da67d082b32342eb1a6e9fe14c3d3cf0b3938`，versionName 1.6.0 / versionCode 4，`aapt dump badging` 确认默认中文 + `application-label-en:'Stretch Timer'`。
+- 执行链：builder（codebuddy/deepseek-v4.1-flash）→ code-reviewer（codebuddy/glm-5.3-flash，P0=0 P1=0，3 条 P2 已闭环）→ qa 静态（codex/gpt-6-luna，含「删 en key 触发 tsc 报错」反证）→ 真机 QA（本窗口 bash 直驱，按 override 表 qa 行分支豁免）→ builder 修 P1 → supervisor（opencode-go/muse-spark-1.3-contributor）复检 PASS，rework=0。
+- 评审/验收文档：`docs/review/CODE_REVIEW_T13.md`、`docs/qa/T13 多语言验收报告.md`（本轮结束时两份均为未纳入 git 版本管理的新增文件，提交时记得 `git add`）。
+- 账本：`docs/model/TASK-MODEL-LOG.jsonl` 6 行、`DISPATCH-LOG.jsonl` 7 行，`node scripts/model/check-ledger.mjs` = LEDGER-OK。
 
 ## 一、当前工作进展
 
@@ -26,16 +41,16 @@
 7. 时间流速：支持 1～100 倍速，便于快速验证提醒和计时逻辑。
 8. 锁屏计时精度：采用 endAt 绝对时间戳，并在 App 回到前台时重新结算。
 9. Android APK 已构建并完成真机验证。
-10. 最新 APK：
+10. **当前最新 APK 是 1.6.0（versionCode 4，本地构建，含 F8 多语言），见本节第 0 条与第三节第 11 条**；下面 10~12 条是 V1.3 的历史归档记录（EAS 云端构建），**不是最新版**，仅留档：
     - EAS Build：8118bb45
     - 包名：com.stretch.sidetimer
     - APK 应用版本号：1.0.0
     - 产品文档版本：V1.3
     - 构建时间：2026-09-15
-11. 最新 APK 已安装并启动验证：
+11. V1.3 当时已安装并启动验证：
     - 手机 2：型号 22101316C
     - 手机 3：型号 23054RA19C
-12. 最新 APK 已归档到：
+12. V1.3 已归档到：
     `artifacts/拉伸换边计时器丨V1.3丨APK丨EAS-8118bb45.apk`
     - 文件大小约 79.8MB
     - SHA-256：
@@ -102,7 +117,10 @@
 
 ## 二、下一步任务
 
-当前没有 P0/P1 待办，后续恢复开发时按以下顺序处理：
+当前没有 P0/P1 待办（F8 多语言已闭环），后续恢复开发时按以下顺序处理：
+
+0. 若要加第三语言（预留能力已就绪）：新建 `RNApp/src/i18n/strings.<code>.ts` 写完整 `Record<StringKey, string>` → `src/i18n/index.tsx` 的 `LANGUAGES` 加一行 `{ code, label, strings }` → 页面代码零改动。**若还想让桌面图标名跟随新语言**：`plugins/withAndroidAppLocales.js`（已存在，当前只生成 `values-en`）里加对应 locale 分支，**不要去手写 `android/app/src/main/res/values-<code>/strings.xml` 作真源**（`eas build --local` 重跑 prebuild 会冲掉）。
+   遗留可选项：历史记录页英文 `1 sides` 单复数未处理（英文观感 P2，未修）。
 
 1. 先读取根目录 `AGENTS.md`、本 HANDOFF、`经验一句话.md`，确认当前开发状态。
 2. 不重复开发已经完成的模式、主题、时间流速功能。
@@ -110,15 +128,24 @@
    - 8 种提醒音效的"听感"需在红米真机上由用户确认是否够响、够明显。客观指标已达标（见第一节第 13 条），但响度主观感受只能人耳判定。若不满意，改 `RNApp/scripts/generate-sounds.py` 里对应函数的频率/时长/节奏参数后重跑脚本即可，无需动 App 代码。
    - 4 首轻音乐的**循环无缝度**与整体音感需用户确认。若嫌响度偏轻/偏响，改 `scripts/prepare-music.py` 的 `--target-lufs`（默认 -18）重跑，无需动 App 代码。
    - 未验证项：**真实音乐 App 被压低**的效果（duckOthers 的焦点类型与释放已实测正确，但"对方确实降音量"需设备上同时播放音乐才能观察）。
-4. 版本号已统一：产品规格 V1.6，App 发布版本 1.5.1（versionCode 3，读 app.json，`eas.json` 的 `appVersionSource` 为 local）。后续发版时保持两者同步、递增 versionCode。
+4. 版本号已统一：产品规格 V1.7，App 发布版本 1.6.0（versionCode 4，读 app.json，`eas.json` 的 `appVersionSource` 为 local）。后续发版时保持两者同步、递增 versionCode。
 5. 如需重新构建 APK：先确认代码和文档变更；构建后将 APK 归档到 `artifacts/`；记录 EAS Build ID、版本号、构建日期、SHA-256；再进行真机安装和启动验证。
 6. 可选后续功能：振动提醒、自定义总时长、通知栏常驻提醒、自动深浅色模式、云同步、账号、统计图表。
 7. 当前明确不纳入范围的功能，除非用户重新提出，不要主动实现。
 
+### 0.1 入库与残留清理（2026-09-27 收口，用户指令 commit + push main）
+
+- 已删：`RNApp/default.profraw`（3.5MB 旧 Rust 剖析文件，本就被 `RNApp/.gitignore` 忽略，纯磁盘残留）。
+- 已清：本轮 `/tmp` 下的任务书、构建日志、真机截图临时物。
+- 已清：`RNApp/build-*.apk` 临时构建产物（与 `artifacts/` 归档 SHA-256 相同，删前已核对）。
+- `.gitignore` 新增两条：`*.旧版-*`（迁移自旧模板的封存件，原件留工作区备查、不入库，避免与新版模板并存造成混淆）、`/temp/`（临时交付目录）。
+- **`USER_MODEL_OVERRIDE.md` 是软链**（指母版真源，符合"分工表软链制、禁拷实文件"）。入库后在其他机器上必然断链——换机器时按规范拷母版真源覆盖该文件即可，不要改成实文件提交。
+- 交付 APK 按既有规则 `*.apk` 不入库，留在 `artifacts/`（4 个 APK 共约 340MB + music-candidates 已跟踪）。
+
 ## 三、注意事项及相关规矩
 
 1. 使用中文沟通。
-2. 本项目此前采用用户直干模式：不派 subagent，不启动多智能体开发链。
+2. （2026-09-27 起）本项目改走标准多智能体链：按根 `AGENTS.md` Phase2 主链 Builder→Code Reviewer→QA→Supervisor→TM 派工，不再直干。原「用户直干模式」条款作废。
 3. 修改代码后必须测试，验证通过后再报告。
 4. 修改需求时先更新 `spec.md`，再同步 `plan.md`、`data-model.md`、`tasks.md`，并升版本号。
 5. 所有主题颜色和样式必须通过主题系统处理，禁止在组件内重新写死颜色。
@@ -127,7 +154,7 @@
 8. APK 构建产物必须保留在 `artifacts/`，不要只保留云端链接。
 9. 不提交 API Key、Token、`.env` 或真实隐私数据。
 10. 未经明确指令不执行 git commit 或 git push。
-11. 最新 APK 为 **1.5.1**（versionCode 3，本地构建）。判断最新版以 `app.json` 的 version + `artifacts/` 归档文件 + 真机 `dumpsys` 校验为准，不要凭记忆的旧版本号。
+11. 最新 APK 为 **1.6.0**（versionCode 4，本地构建，含 F8 多语言）。判断最新版以 `app.json` 的 version + `artifacts/` 归档文件 + 真机 `dumpsys` 校验为准，不要凭记忆的旧版本号。
 12. 目标 Android 真机为红米；若 ADB 安装失败，优先检查设备授权、USB 调试和 MIUI USB 安装权限。
 13. 重新安装同包名 APK 通常会保留本地设置、历史记录和模式数据，但重大版本升级前仍应提醒用户备份。
 14. （2026-09-19）音效相关：
@@ -142,3 +169,32 @@
     - **必须同步更新 `MUSIC_ATTRIBUTION` 的曲名列表**：CC BY 4.0 要求署名，只写一部分曲目等于署名不完整。
     - 本机 `ffmpeg` 在 `/opt/homebrew/bin/ffmpeg`，处理脚本依赖它。
     - 素材站首选只接受"站方主动开放的接口"（如 Incompetech 的 `llms.txt` + `pieces.json`）。**不要用自动化手段绕过 Cloudflare 之类的访问保护**——即使动机正当，也是规避技术措施。
+
+
+## 迁移整理记一笔（2026-09-23）
+- 铺模板包：放71/备份7/跳过15；USER_MODEL_OVERRIDE.md 改软链指母版；旧 AGENTS 专属规矩已附新版末尾。
+- CHANGE_REQUEST: NONE。账本两表示例行已删。基线：RNApp tsc PASS，lint/test 无脚本。UI 目检未做（无 web dev 条件）。
+
+## 治理审计待办（2026-09-26，ORCA 治理层）—— ✅ 已闭环 2026-09-27
+- 原「两本账为 0 字节：补建账本，或按'未开工/空占位'标注」—— **已闭环**：T13 开工时已补建并按 schema 记账，现 `docs/model/TASK-MODEL-LOG.jsonl` 6 行、`DISPATCH-LOG.jsonl` 7 行，`node scripts/model/check-ledger.mjs` = LEDGER-OK（model 用 provider/model 精确写法，角色交付 PASS≠整链验收，未闭环项以各文档残留风险记 chain_status=OPEN）。
+- 依据与全量清单见 `1.Active/ORCA派工账本-逐项目待办清单.md`。
+
+## neat-freak 知识收口（2026-09-27，T13 收尾派）
+只改文档与规则、**零业务代码改动**（代码侧 `tsc` 状态与第 0 条验收时一致）。改动清单：
+
+| 文件 | 改什么 | 为什么 |
+|---|---|---|
+| `spec.md` | V1.7 变更记录与 F8 的系统级文案条目：`values-en/strings.xml` 的真源改为 config plugin `plugins/withAndroidAppLocales.js`；「预留日、韩位置」改为「结构已对开，加文件+加表行即可」 | 原文口径停留在被真机 P1 证伪的"手写 res"阶段，且"预留位置"易读成已有占位 |
+| `plan.md` | ① 目录结构整体重写：根路径 `app-glm/RNApp/`→`RNApp/`，删不存在的 `CountdownRing.tsx` / `TimerMachine.tsx`，补 `i18n/`、`plugins/`、`app.json`；② V1.7 变更记录补 config plugin 口径；③ **新增「F8 界面多语言实现方案」整节**（技术路线纠偏、文案层、状态持久化、config plugin 与 aapt 判据） | 原目录结构是早期残留、与真实文件树不符；F7 有实现方案节而 F8 只有变更记录一句，方案无处可查 |
+| `data-model.md` | `language` 行末句残缺（「不进入模式快照 settings 之外的任何逻辑」）补全为「不进模式快照 + 切模式时显式带回当前语言」 | 原句语义不通；补全后与 `settingsToModeSettings` / `modeSettingsToSettings` 实现逐条对应 |
+| `tasks.md` | ① **修 T13 掉出表格**（原第 23 行多一个空行，导致 T13 渲染在表外）；② T13 内容改为 config plugin 口径并补「模式编辑弹窗」；③ 新增 2026-09-27 状态行（含链路、rework=0、两条遗留） | 表格断裂属渲染缺陷；状态行缺失使 tasks.md 落后于实际进度 |
+| `docs/handoff/HANDOFF.md` | ① DEV_BASELINE 由「五份 V1.7」改为「四份带版本 V1.7 + constitution 无版本号」；② 第 10~12 条 V1.3「最新 APK」改标为历史归档并指向真正的 1.6.0；③ 工作区外的截图证据引用改成文字描述（不保留任何临时目录路径）；④ 评审/验收文档的 git 状态注记改成耐久措辞；⑤ 第二节 0 的「再加 plugin」改为「plugin 已存在、只生成 en」；⑥ 治理审计待办标记已闭环 | 消除自相矛盾（份数）、过期版本号误导、指向工作区外的证据路径、已闭环待办仍挂着 |
+| `RNApp/AGENTS.md` | 补一节「本项目自定义 config plugin」：点名 `plugins/withAndroidAppLocales.js`、声明 `res/values-*` 手改非真源、指向 `app.json` plugins 注册 | 该文件是 RNApp 目录内 agent 的唯一入口规则；本轮 P1 正是"手改 res 被 prebuild 冲掉"，此坑必须落在入口处 |
+
+临时构建产物清理：`RNApp/build-1790453239191.apk`（92516870 字节）已删。删前核对与 `artifacts/拉伸换边计时器丨V1.6丨多语言丨APK丨本地构建.apk` **SHA-256 完全相同**（`05770ddb…3938`），是同一份文件的重复副本，删除零信息损失；`artifacts/` 下 4 个交付 APK 全部保留未动。根 `.gitignore` 已含 `*.apk`，本次删除不影响任何已入库内容。
+
+未改（留给人工拍板，见收口清单）：
+- 历史记录页英文 `1 sides` 单复数（功能无碍、英文观感 P2，修它要动 `strings.en.ts` 的 `history.rowDesc` 或引入复数分支——属开发内小改，CHANGE_REQUEST: A）
+- 第二台真机 `indq5xfi6hovay4d` 屏幕全黑无法出图，目视验收待设备恢复后补做
+- `RNApp/default.profraw`（3.5MB，2026-09-14 遗留 Rust 性能剖析文件，非本轮 build 产物，已被 `RNApp/.gitignore` 忽略）
+- `AGENTS.md` 尾部整段重复的「本项目原有规则（迁移自旧 AGENTS.md）」旧版全文，与上半部新版大面积重复；属中央模板同步范围，非本项目 neat-freak 该动，已提请编排者注意
