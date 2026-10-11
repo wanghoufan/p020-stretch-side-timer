@@ -17,7 +17,7 @@
 ```text
 RNApp/                  # Expo 工程（App 本体）
 ├── App.tsx             # 入口：Providers（Settings/I18n/History）+ NavigationContainer + Tabs
-├── app.json            # 版本号真源 + plugins（withAndroidAppLocales、expo-localization）
+├── app.json            # 版本号真源 + plugins（withAndroidAppLocales、expo-localization、expo-splash-screen）
 ├── plugins/
 │   └── withAndroidAppLocales.js   # Expo config plugin：prebuild 后生成 res/values-en/strings.xml
 └── src/
@@ -78,6 +78,7 @@ npx eas build --platform android --profile preview --local   # 本地产出 APK�
 - **多主题风格**：4 套主题（暖萌/科技/极简/杂志），设置页可选，全局套用
 - **音效系统**：8 种换边音 + 9 种背景音（5 环境音 + 4 轻音乐，Incompetech CC BY 4.0 署名）
 - **界面多语言**：设置页「跟随系统 / 中文 / English」三项，「跟随系统」排第一且为新装默认；切换即时生效不重启；加新语言 = 新建 `src/i18n/strings.<code>.ts` + `LANGUAGES` 加一行，页面代码零改动；英文系统下桌面图标名为 `Stretch Timer`
-- **最新 APK：V1.7.0**（versionCode 5，本地构建，已推两台红米真机）。归档与设备见 HANDOFF
+- **启动画面**：品牌化 splash（桃色 `#FFD9C7` 全屏 + 小狗吉祥物/秒表徽章），由 `expo-splash-screen` config plugin 在 prebuild 时从 `app.json` 生成；图源 `assets/splash-icon.png`（transparent，内容压在 Android 12+ 可见圆内）
+- **最新 APK：V1.8.0**（versionCode 6，本地构建，已推第一台红米真机）。归档与设备见 HANDOFF
 - P2 锁屏计时精度：代码已实现（endAt 时间戳校正）
 - 运行与打包命令见上文；详细交接见 [docs/handoff/HANDOFF.md](docs/handoff/HANDOFF.md)

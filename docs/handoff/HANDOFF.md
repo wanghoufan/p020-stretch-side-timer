@@ -1,12 +1,23 @@
 # HANDOFF｜交接
 
-- Captured at：2026-09-27
-- PROJECT_PHASE：DEVELOP（T13 多语言 + T14 跟随系统均已完成并通过真机验收，chain_status=CLOSED）
+- Captured at：2026-10-11
+- PROJECT_PHASE：DEVELOP（T13 多语言 + T14 跟随系统 + T15 启动画面均已完成并通过真机验收，chain_status=CLOSED）
 - DEV_BASELINE：SDD **四份**带版本文档 V1.7（`spec.md` / `plan.md` / `data-model.md` / `tasks.md`）；另 `constitution.md` 为长期原则底线、无版本号，DEV 期间不随 SDD 升版
-- Stage ID：TASK-2-MVP / T13-多语言 / T14-跟随系统
-- 当前状态：2026-09-27 完成 F8 界面多语言（中文/英文，T13）与「跟随系统」（T14），本地构建 V1.7.0（versionCode 5）并推送两台真机。CHANGE_REQUEST: A（T14）（新增 F8 功能，用户已拍板架构「方案 A RN i18n 层」+ 翻译口径；属局部功能变化，更新局部 Requirement/DoD 后留 DEVELOP，未召 Sol Planner）
+- Stage ID：TASK-2-MVP / T13-多语言 / T14-跟随系统 / T15-启动画面
+- 当前状态：2026-10-11 完成 T15 启动画面品牌化，本地构建 V1.8.0（versionCode 6）并推送第一台与手机 3 真机。CHANGE_REQUEST: A（T15）（替换默认 splash 资源 + 加 expo-splash-screen 配置，属开发内小改，未召 Planner）
 
-## 零、T13 界面多语言（F8，2026-09-27，已完成）
+## 零、启动画面品牌化（T15，2026-10-11，已完成）
+
+- 需求（用户原话）：「目前软件的启动画面还是默认框架，帮我优化」。原状：`assets/splash-icon.png` 一直没换过，还是 create-expo-app 模板的灰色网格靶心占位图，白底（`colors.xml` 的 `splashscreen_background` 当时是 `#FFFFFF`）。
+- 做法：`npx expo install expo-splash-screen`（装到 `~57.0.9`，此前项目里没有它，splash 由 `@expo/prebuild-config` 默认逻辑生成）→ `app.json` 的 `plugins` 追加 `["expo-splash-screen", { "image": "./assets/splash-icon.png", "imageWidth": 288, "resizeMode": "contain", "backgroundColor": "#FFD9C7" }]` → `assets/splash-icon.png` 从应用图标（`assets/android-icon-foreground.png`）提取透明底「小狗头 + 秒表」吉祥物重排为紧凑构图（秒表作右下角徽章）。
+- **坑 P1（尺寸口径）**：Android 12+ 的 splash 图标是 **288dp 画布、可见区只有中间约 192dp 圆**（`expo-splash-screen` 的插件正是按 `canvasSize = 288 * density` 合成，`imageWidth` 是「图片在画布内的渲染宽度(dp)」）。因此 ①`imageWidth` 要给 288 让图铺满画布，否则内容被二次缩小；②**图内内容必须压在可见圆内**，本项目取内容 bbox 对角线 = 画布边长 64%（实测未被裁切），秒表徽章若放到画布角落会被圆切掉。图源保持透明底 + 背景色交给 `backgroundColor`，避免「方形色块边缘」。
+- **坑 P2（构建环境）**：本机 shell 同时有 `ANDROID_HOME=/opt/homebrew/share/android-commandlinetools` 与 `ANDROID_SDK_ROOT=/Users/zzymima0000/android-toolchain/sdk`，gradle 直接失败：「Several environment variables and/or system properties contain different paths to the SDK」。**构建前 `unset ANDROID_SDK_ROOT`**（保留 README 里的 `ANDROID_HOME`）。
+- 变更检测点（prebuild 后自查）：`res/values/styles.xml` 的 `Theme.App.SplashScreen` parent 变成 `Theme.SplashScreen` 且含 `windowSplashScreenBackground/AnimatedIcon/postSplashScreenTheme`；`MainActivity.kt` 注入 `SplashScreenManager.registerOnActivity(this)`；`AndroidManifest.xml` 的 activity theme = `@style/Theme.App.SplashScreen`；`drawable-*/splashscreen_logo.png` 为 288dp 画布合成图。`eas build --local` 判定本工程为 managed（`/android` 在 .gitignore 里），仍会重跑 prebuild，**真源始终是 `app.json`**。
+- 真机验收（IN9LZTAYV4UGU4JF / 22041216UC / Android 14；目视证据 `screenshots/V1.8 启动画面 真机截图.png`）：`am force-stop` 后冷启动连拍 10 张截图，第 2 帧即启动画面 —— 桃色 `#FFD9C7` 铺满全屏、吉祥物实测 388×317px（141dp 宽，占屏宽 36%）居中、**无裁切无拉伸**；随后正常进入计时器页无异常；`dumpsys package` = versionName 1.8.0 / versionCode 6。产物内 `aapt2` 复核：`color/splashscreen_background = #ffffd9c7`、`windowSplashScreenBackground = @color/splashscreen_background`、`application-label-en = 'Stretch Timer'`（T13 多语言未回退）。
+- 产物：`artifacts/拉伸换边计时器丨V1.8丨启动画面丨APK丨本地构建.apk`，92880860 字节，SHA-256 `90e2f85e1be3f10ea03d488d33cf3666bc7f9447e508688e5573f689419a6749`。
+- 未做/已知：**手机 3**（Redmi Note 12T Pro `UKCESWB67PUO7LPB` / 23054RA19C）已推 V1.8.0 —— dumpsys 校验 versionCode=6 / versionName=1.8.0，冷启动连拍第 1 帧即启动画面（桃色铺满、吉祥物居中无裁切），随后正常进入计时页；HANDOFF 记的「第二台」`indq5xfi6hovay4d` 本次未连机故未推。本轮为单文件级资源改动，未走 ORCA 派工链（本窗口直接改 + 真机实测取证）。
+
+## 0.1 T13 界面多语言（F8，2026-09-27，已完成）
 
 - 需求：老外可在设置里切 English，整个 App 所有可见文字立即变英文、不重启 App；同时把多语言结构对开。
 - **技术路线纠偏（重要）**：用户最初给的 `values/strings.xml` + `values-en` + DataStore + Activity recreate 是原生 Android 做法；本项目是 Expo/React Native（RN 0.86 / Expo 57），RN 界面文字**不经过 `res/values`**，原生方案在 App 内无效。改为 RN 侧 i18n 层：`RNApp/src/i18n/`（`strings.zh.ts` 为 key 唯一来源、`strings.en.ts` 标 `Record<StringKey, string>` 漏翻即 tsc 报错、`index.tsx` 出 `LANGUAGES` + `I18nProvider` + `useT()`）；语言存 `@stretch/settings` 的 `language` 字段（默认 zh，**不进模式快照**），`App.tsx` 顶层包 `I18nProvider`，切换只触发重渲染、不 remount。
@@ -41,7 +52,7 @@
 7. 时间流速：支持 1～100 倍速，便于快速验证提醒和计时逻辑。
 8. 锁屏计时精度：采用 endAt 绝对时间戳，并在 App 回到前台时重新结算。
 9. Android APK 已构建并完成真机验证。
-10. **当前最新 APK 是 1.7.0（versionCode 5，本地构建，含 F8 多语言 + 跟随系统），见本节第 0 条与第三节第 11 条**；下面 10~12 条是 V1.3 的历史归档记录（EAS 云端构建），**不是最新版**，仅留档：
+10. **当前最新 APK 是 1.8.0（versionCode 6，本地构建，含 F8 多语言 + 跟随系统 + T15 品牌化启动画面），见「零」条与第三节第 11 条**；下面 10~12 条是 V1.3 的历史归档记录（EAS 云端构建），**不是最新版**，仅留档：
     - EAS Build：8118bb45
     - 包名：com.stretch.sidetimer
     - APK 应用版本号：1.0.0

@@ -17,7 +17,7 @@
 ```text
 RNApp/                  # the Expo project (the app itself)
 ├── App.tsx             # entry: providers (Settings/I18n/History) + NavigationContainer + Tabs
-├── app.json            # version source of truth + plugins (withAndroidAppLocales, expo-localization)
+├── app.json            # version source of truth + plugins (withAndroidAppLocales, expo-localization, expo-splash-screen)
 ├── plugins/
 │   └── withAndroidAppLocales.js   # Expo config plugin: generates res/values-en/strings.xml after prebuild
 └── src/
@@ -79,6 +79,7 @@ npx eas build --platform android --profile preview --local   # produces the APK 
 - **Multiple themes**: 4 themes (warm-cute / tech / minimal / magazine), selectable on the settings page and applied throughout the app
 - **Sound system**: 8 side-switch cues + 9 background tracks (5 ambient + 4 light instrumental, Incompetech CC BY 4.0 attribution)
 - **Multilingual UI**: the settings page offers "follow the system / 中文 / English", with "follow the system" listed first and set as the default on a fresh install; switching takes effect immediately without a restart; adding a language means creating `src/i18n/strings.<code>.ts` and adding one line to `LANGUAGES`, with zero changes to page code. On an English system the desktop icon reads `Stretch Timer`.
-- **Latest APK: V1.7.0** (versionCode 5, built locally, pushed to two Redmi phones). The archive and device list are in HANDOFF.
+- **Branded splash screen**: peach `#FFD9C7` background + the puppy mascot with a stopwatch badge, generated at prebuild time from `app.json` by the `expo-splash-screen` config plugin; source art is `assets/splash-icon.png` (transparent, content kept inside the visible circle on Android 12+)
+- **Latest APK: V1.8.0** (versionCode 6, built locally, pushed to the first Redmi phone). The archive and device list are in HANDOFF.
 - P2 lock-screen timing accuracy: implemented in code (endAt timestamp correction)
 - Run and packaging commands are above; the detailed handoff is in [docs/handoff/HANDOFF.md](docs/handoff/HANDOFF.md)
