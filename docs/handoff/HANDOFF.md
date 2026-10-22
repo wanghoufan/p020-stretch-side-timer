@@ -1,10 +1,10 @@
 # HANDOFF｜交接
 
-- Captured at：2026-10-11
+- Captured at：2026-10-23
 - PROJECT_PHASE：DEVELOP（T13 多语言 + T14 跟随系统 + T15 启动画面均已完成并通过真机验收，chain_status=CLOSED）
 - DEV_BASELINE：SDD **四份**带版本文档 V1.7（`spec.md` / `plan.md` / `data-model.md` / `tasks.md`）；另 `constitution.md` 为长期原则底线、无版本号，DEV 期间不随 SDD 升版
 - Stage ID：TASK-2-MVP / T13-多语言 / T14-跟随系统 / T15-启动画面
-- 当前状态：2026-10-11 完成 T15 启动画面品牌化，本地构建 V1.8.0（versionCode 6）并推送第一台与手机 3 真机。CHANGE_REQUEST: A（T15）（替换默认 splash 资源 + 加 expo-splash-screen 配置，属开发内小改，未召 Planner）
+- 当前状态：V1.8.0（versionCode 6）为最新交付，2026-10-22 已推送 GitHub `main` 并按同版本重新构建、装 22041216UC 真机通过；2026-10-23 已发布蒲公英安装页 <https://www.pgyer.com/stretchsidetimer>（公开、长期有效）。CHANGE_REQUEST: A（T15）（替换默认 splash 资源 + 加 expo-splash-screen 配置，属开发内小改，未召 Planner）
 
 ## 零、启动画面品牌化（T15，2026-10-11，已完成）
 
@@ -24,6 +24,13 @@
 - **产物自检（aapt2）**：`package com.stretch.sidetimer`、versionName `1.8.0` / versionCode `6`、`application-label` 中文＝拉伸换边计时器、`application-label-en`＝Stretch Timer、`color/splashscreen_background = #ffffd9c7`、`string/app_name` 含 `(en) Stretch Timer`。
 - **真机**：`192.168.31.9:5555`（22041216UC / Android 14）`install -r` 成功，`lastUpdateTime 2026-10-22 23:53`，versionCode 6 / versionName 1.8.0；`am force-stop` 后冷启动，`topResumedActivity = com.stretch.sidetimer/.MainActivity`，截图确认进入计时页（中文、默认模式「总10 单60 提3」正常，无闪退无白屏）。
 - **未完成**：`indq5xfi6hovay4d`（22101316C，现存 V1.7.0 / code 5）安装被系统拦截 `INSTALL_FAILED_USER_RESTRICTED`（MIUI 需机主在手机上点允许「USB 安装」），需机主放行后再推。启动画面本次未再逐帧抓拍，以资源级复核＋10-11 真机目视为准。
+
+### 0.0.2 2026-10-23 蒲公英发布 ＋ 工作区清理
+
+- **发布**：<https://www.pgyer.com/stretchsidetimer>，版本 1.8.0 / 88.6 MB，安装方式「公开」、长期有效、独立链接（原默认后缀 `lshbjsq-android` 改为 `stretchsidetimer`）。已填版本更新说明、应用介绍、「无需注册登录／无网络请求／无付费广告」审核说明。蒲公英列表 Build 显示 `1` 是平台按上传序号自增，**APK 内 versionCode 仍为 6**。
+- **图标**：蒲公英从 APK 自动提取，实测显示为桃色底小狗吉祥物（与 `RNApp/assets/icon.png` 一致，安装页与列表均已核对）；平台「APP 设置／商店设置」无单独上传图标入口，要换图只能改 APK 内 icon 后重传。
+- **清理（本轮小清理）**：删除 5 个 `.DS_Store`（项目根、`artifacts/`、`RNApp/`、`node_modules/` 两处）；`*.旧版-*` 迁移备份、`artifacts/` 各版本 APK（V1.6／V1.7／V1.8×2）全部保留；`scripts/`、`.project.yaml`、`docs/model/NEXT-TASKS.md` 属本地治理脚手架，按公开仓规矩不入库、仅留工作区。
+- **遗留**：仅有上面 0.0.1 记的 `indq5xfi6hovay4d` 未升级到 V1.8.0（设备侧限制，非 App 缺陷）。
 
 ## 0.1 T13 界面多语言（F8，2026-09-27，已完成）
 
