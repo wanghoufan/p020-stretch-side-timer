@@ -17,6 +17,14 @@
 - 产物：`artifacts/拉伸换边计时器丨V1.8丨启动画面丨APK丨本地构建.apk`，92880860 字节，SHA-256 `90e2f85e1be3f10ea03d488d33cf3666bc7f9447e508688e5573f689419a6749`。
 - 未做/已知：**手机 3**（Redmi Note 12T Pro `UKCESWB67PUO7LPB` / 23054RA19C）已推 V1.8.0 —— dumpsys 校验 versionCode=6 / versionName=1.8.0，冷启动连拍第 1 帧即启动画面（桃色铺满、吉祥物居中无裁切），随后正常进入计时页；HANDOFF 记的「第二台」`indq5xfi6hovay4d` 本次未连机故未推。本轮为单文件级资源改动，未走 ORCA 派工链（本窗口直接改 + 真机实测取证）。
 
+### 0.0.1 2026-10-22 推送到 GitHub ＋ 重新构建（V1.8.0 同版本）
+
+- **推送**：`origin/main` 0b912a0 → 4469f4d，含 `b888c67`（T15 启动画面 V1.8.0，此前只在本地）与本轮治理记录提交。工作区里被 2026-10-17 铺包覆盖的 `README.md`（治理模板导航）**已恢复为 App 产品版**（取自 `README.md.旧版-2026-10-12`，与 `README.en.md` 一致）；`scripts/`、`.project.yaml`、`docs/model/NEXT-TASKS.md` 等 ORCA 脚手架按公开仓规矩不入库。GitHub 侧仍无 Release/tag（版本以提交为准）。
+- **重建**：`cd RNApp && unset ANDROID_SDK_ROOT && npx eas build --platform android --profile preview --local --non-interactive`，Build successful。产物 `artifacts/拉伸换边计时器丨V1.8丨启动画面丨APK丨2026-10-22 重建.apk`，92880860 字节，SHA-256 `0dcdb2ec2ffc3014b2f4e90abdd1be569b81a44fff043caf1676a64fe1da8434`。与 10-11 包同源同版本、同字节数，哈希不同属构建非确定性；10-11 已验证包保留未覆盖。
+- **产物自检（aapt2）**：`package com.stretch.sidetimer`、versionName `1.8.0` / versionCode `6`、`application-label` 中文＝拉伸换边计时器、`application-label-en`＝Stretch Timer、`color/splashscreen_background = #ffffd9c7`、`string/app_name` 含 `(en) Stretch Timer`。
+- **真机**：`192.168.31.9:5555`（22041216UC / Android 14）`install -r` 成功，`lastUpdateTime 2026-10-22 23:53`，versionCode 6 / versionName 1.8.0；`am force-stop` 后冷启动，`topResumedActivity = com.stretch.sidetimer/.MainActivity`，截图确认进入计时页（中文、默认模式「总10 单60 提3」正常，无闪退无白屏）。
+- **未完成**：`indq5xfi6hovay4d`（22101316C，现存 V1.7.0 / code 5）安装被系统拦截 `INSTALL_FAILED_USER_RESTRICTED`（MIUI 需机主在手机上点允许「USB 安装」），需机主放行后再推。启动画面本次未再逐帧抓拍，以资源级复核＋10-11 真机目视为准。
+
 ## 0.1 T13 界面多语言（F8，2026-09-27，已完成）
 
 - 需求：老外可在设置里切 English，整个 App 所有可见文字立即变英文、不重启 App；同时把多语言结构对开。
