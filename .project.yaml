@@ -1,0 +1,12 @@
+# 项目机器身份 — 由 Project Steward 生成，请勿删除
+project_id: P020
+name_zh: 拉伸换边计时 App
+slug: stretch-side-timer
+status: ing
+github: wanghoufan/p020-stretch-side-timer
+visibility: public
+created_at: 2026-09-19T00:00:00+08:00  # GitHub 建仓日（回填时取自 API）
+local_path: /Users/zzymima0000/Developer/coding/1.Active/020-ing-拉伸换边app
+default_branch: main
+repo_role: primary
+lifecycle: [ing, paused, done, archived]
